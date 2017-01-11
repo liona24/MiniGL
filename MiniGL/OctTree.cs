@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using MiniGL;
@@ -8,7 +9,7 @@ public interface IHasBoundaries3
     Cuboid Boundaries { get; }
 }
 
-public class OctTree<T> : IHasBoundaries3
+public class OctTree<T> : IHasBoundaries3, IEnumerable<T>
     where T : IHasBoundaries3
 {
     OctTree<T>[] children;
@@ -18,7 +19,7 @@ public class OctTree<T> : IHasBoundaries3
     int numItemsInChildren;
 
     public Cuboid Boundaries { get { return boundaries; } }
-    public int ItemCount { get { return numItemsInChildren + items.Count; } }
+    public int Count { get { return numItemsInChildren + items.Count; } }
     public bool HasChildren { get { return children != null; } }
     
     public OctTree(Cuboid boundaries, int maxItemsPerNode)
@@ -27,6 +28,11 @@ public class OctTree<T> : IHasBoundaries3
         numItemsInChildren = 0;
         this.boundaries = boundaries;
         items = new List<T>();
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        return Collect().GetEnumerator();
     }
 
     public bool Insert(T item)
@@ -115,7 +121,15 @@ public class OctTree<T> : IHasBoundaries3
         if (children != null)
             collectFromChildren(collection);
     }
-
+    
+    private IEnumerator GetEnumerator1()
+    {
+        return this.GetEnumerator();
+    }
+    object IEnumerator.GetEnumerator()
+    {
+        return GetEnumerator1();
+    }
     private void collectFromChildren(List<T> coll)
     {
         for (int i = 0; i < 8; i++)
