@@ -12,7 +12,7 @@ namespace MiniGL
         int width, height;
         int offsetX, offsetY;
 
-        float[][] idcMap; //used to render polygons
+        readonly float[][] idcMap; //used to render polygons
 
         public int OffsetX { get { return offsetX; } set { offsetX = value; } }
         public int OffsetY { get { return offsetY; } set { offsetY = value; } }
