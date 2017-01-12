@@ -35,7 +35,35 @@ namespace MiniGL
         
         public GObject2D()
         { }
+        
+        public GObject2D[] Split(GObject2DFactory factory)
+        {
+            Vec3 mid;
+            GObject2D[] res = null;
 
+            if (points.Length == 2)
+            {
+                mid = points[0] + points[1];
+                res = new GObject2D[2];
+                res[0] = factory.Create(points[0], mid, tmaker);
+                res[1] = factory.Create(mid, points[1], tmaker);
+            }
+            else
+            {
+                var center = points[0] + points[1] + points[2];
+                res = new GObject2D[6];
+                mid = points[0] + points[1];
+                res[0] = factory.Create(points[0], mid, center, tmaker);
+                res[1] = factory.Create(points[1], mid, center, tmaker);
+                mid = points[1] + points[2];
+                res[2] = factory.Create(points[1], mid, center, tmaker);
+                res[3] = factory.Create(points[2], mid, center, tmaker);
+                mid = points[2] + points[0];
+                res[4] = factory.Create(points[0], mid, center, tmaker);
+                res[5] = factory.Create(points[2], mid, center, tmaker);
+            }
+            return res;
+        }
         public void UpdateBoundaries()
         {
             double minX = double.MaxValue;
@@ -193,6 +221,34 @@ namespace MiniGL
                     maxZ = points[i].Z;
             }
             boundaries = new Cuboid(minX, minY, minZ, maxX, maxY, maxZ);
+        }
+        public GObject[] Split(GObjectFactory factory)
+        {
+            Vec4 mid;
+            GObject[] res = null;
+
+            if (points.Length == 2)
+            {
+                mid = points[0] + points[1];
+                res = new GObject[2];
+                res[0] = factory.Create(points[0], mid, tmaker);
+                res[1] = factory.Create(mid, points[1], tmaker);
+            }
+            else
+            {
+                var center = points[0] + points[1] + points[2];
+                res = new GObject[6];
+                mid = points[0] + points[1];
+                res[0] = factory.Create(points[0], mid, center, tmaker);
+                res[1] = factory.Create(points[1], mid, center, tmaker);
+                mid = points[1] + points[2];
+                res[2] = factory.Create(points[1], mid, center, tmaker);
+                res[3] = factory.Create(points[2], mid, center, tmaker);
+                mid = points[2] + points[0];
+                res[4] = factory.Create(points[0], mid, center, tmaker);
+                res[5] = factory.Create(points[2], mid, center, tmaker);
+            }
+            return res;
         }
 
         public I3Dimensional[] TransformToWindow()
