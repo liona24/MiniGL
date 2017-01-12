@@ -38,29 +38,25 @@ namespace MiniGL
         
         public GObject2D[] Split(GObject2DFactory factory)
         {
-            Vec3 mid;
             GObject2D[] res = null;
 
             if (points.Length == 2)
             {
-                mid = points[0] + points[1];
+                var mid = points[0] + points[1];
                 res = new GObject2D[2];
                 res[0] = factory.Create(points[0], mid, tmaker);
                 res[1] = factory.Create(mid, points[1], tmaker);
             }
             else
             {
-                var center = points[0] + points[1] + points[2];
-                res = new GObject2D[6];
-                mid = points[0] + points[1];
-                res[0] = factory.Create(points[0], mid, center, tmaker);
-                res[1] = factory.Create(points[1], mid, center, tmaker);
-                mid = points[1] + points[2];
-                res[2] = factory.Create(points[1], mid, center, tmaker);
-                res[3] = factory.Create(points[2], mid, center, tmaker);
-                mid = points[2] + points[0];
-                res[4] = factory.Create(points[0], mid, center, tmaker);
-                res[5] = factory.Create(points[2], mid, center, tmaker);
+                res = new GObject2D[4];
+                var mid01 = points[0] + points[1];
+                var mid02 = points[0] + points[2];
+                var mid12 = points[1] + points[2];
+                res[0] = factory.Create(points[0], mid01, mid02, tmaker);
+                res[1] = factory.Create(points[1], mid01, mid12, tmaker);
+                res[2] = factory.Create(points[2], mid02, mid12, tmaker);
+                res[3] = factory.Create(mid01, mid02, mid12, tmaker);
             }
             return res;
         }
@@ -224,29 +220,25 @@ namespace MiniGL
         }
         public GObject[] Split(GObjectFactory factory)
         {
-            Vec4 mid;
             GObject[] res = null;
 
             if (points.Length == 2)
             {
-                mid = points[0] + points[1];
+                var mid = points[0] + points[1];
                 res = new GObject[2];
                 res[0] = factory.Create(points[0], mid, tmaker);
                 res[1] = factory.Create(mid, points[1], tmaker);
             }
             else
             {
-                var center = points[0] + points[1] + points[2];
-                res = new GObject[6];
-                mid = points[0] + points[1];
-                res[0] = factory.Create(points[0], mid, center, tmaker);
-                res[1] = factory.Create(points[1], mid, center, tmaker);
-                mid = points[1] + points[2];
-                res[2] = factory.Create(points[1], mid, center, tmaker);
-                res[3] = factory.Create(points[2], mid, center, tmaker);
-                mid = points[2] + points[0];
-                res[4] = factory.Create(points[0], mid, center, tmaker);
-                res[5] = factory.Create(points[2], mid, center, tmaker);
+                res = new GObject[4];
+                var mid01 = points[0] + points[1];
+                var mid02 = points[0] + points[2];
+                var mid12 = points[1] + points[2];
+                res[0] = factory.Create(points[0], mid01, mid02, tmaker);
+                res[1] = factory.Create(points[1], mid01, mid12, tmaker);
+                res[2] = factory.Create(points[2], mid02, mid12, tmaker);
+                res[3] = factory.Create(mid01, mid02, mid12, tmaker);
             }
             return res;
         }
