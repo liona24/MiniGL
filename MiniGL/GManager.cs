@@ -5,8 +5,12 @@ using System.Collections.Generic;
 
 namespace MiniGL
 {
-    abstract class VertexStorage<T>
-        where T : GObject
+    //TODO add xml serialization
+    
+    ///<summary>
+    /// Handles vertex and GObject storage
+    ///</summary>
+    public class GManager 
     {
         private const int EMPTY_HASH = -1;
 
@@ -25,7 +29,8 @@ namespace MiniGL
                 Vertices = new Vec4[2] { v1, v2 };
                 ObjHash = objHash;
             }
-
+            
+            //TODO export this function somewhere where it is usefull
             public VInfo[] Split()
             {
                 VInfo[] res = null;
@@ -56,38 +61,49 @@ namespace MiniGL
         private int fillLevelVertexStorage;
         
         private int activeHash;
-        private readonly Dictionary<int, T> objectStorage;
+        private readonly Dictionary<int, GObject> objectStorage;
 
-        protected VertexStorage(int initialStorageSize)
+        public GManager(int initialStorageSize)
         {
             vertexStorage = new VInfo[initialStorageSize];
             fillLevelVertexStorage = 0;
-            activeHash = 0;
-            objectStorage = new Dictionary<int, T>();
-            objectStorage.Add(EMPTY_HASH, null);
+            activeHash = EMPTY_HASH;
+            objectStorage = new Dictionary<int, GObject>();
+            objectStorage.Add(activeHash, new GObject(new TMaker()));
         }
-        
-        protected void next()
-        {
-            activeHash++;
-        }
-        protected T getObjectByHash(int hash)
+        ///<summary>
+        ///Returns the GObject corresponding to the given hash
+        ///</summary>
+        public GObject GetObjectByHash(int hash)
         {
             return objectStorage[hash];
         }
-        protected void setObject(T obj)
+        ///<summary>
+        ///Adds a new GObject to the internal storage. All vertices will be linked to that GObject until another one becomes active
+        ///</summary>
+        public void AddGObject(GObject obj)
         {
+            activeHash++;
             objectStorage.Add(activeHash, obj);
         }
-        protected void addTriangle(Vec4 v1, Vec4 v2, Vec4 v3)
+        ///<summary>
+        ///Adds a triangle to the vertex buffer and links it to the currently active GObject
+        ///</summary>
+        public void AddVertices(Vec4 v1, Vec4 v2, Vec4 v3)
         {
             add(new VInfo(v1, v2, v3, activeHash));
         }
-        protected void addLine(Vec4 v1, Vec4 v2)
+        ///<summary>
+        ///Adds a line to the vertex buffer and links it to the currently active GObject
+        ///</summary>
+        public void AddVertices(Vec4 v1, Vec4 v2)
         {
             add(new VInfo(v1, v2, activeHash));
         }
-        protected void remove(int hash)
+        ///<summary>
+        ///Removes the GObject corresponding to the given hash from the internal storage and all linked vertices
+        ///</summary>
+        public void RemoveObjectByHash(int hash)
         {
             objectStorage.Remove(hash);
             for (int i = 0; i < fillLevelVertexStorage; i++)
@@ -96,10 +112,13 @@ namespace MiniGL
                     vertexStorage[i--] = vertexStorage[fillLevelVertexStorage--];
             }
         }
-        protected void drawStorage(ZBuffer zBuffer, Rasterizer raster, ViewTransformator viewT)
+        ///<summary>
+        ///Draws every vertex in the storage to the given zBuffer using the given rasterizer and ViewTransformator
+        ///</summary>
+        public void DrawStorage(ZBuffer zBuffer, Rasterizer raster, ViewTransformator viewT)
         {
             int cacheHash = EMPTY_HASH;
-            T cacheObject = null;
+            GObject cacheObject = null;
             for (int i = 0; i < fillLevelVertexStorage; i++)
             {
                 var stored = vertexStorage[i];
@@ -113,11 +132,15 @@ namespace MiniGL
                 raster.Rasterize(cacheHash, zBuffer, viewT.TransformToWindow(transformed));
             }
         }
+        ///<summary>
+        ///Clears the vertex storage and all removes all GObjects
+        ///</summary>
         public void Clear()
         {
             activeHash = 0;
             fillLevelVertexStorage = 0;
             objectStorage.Clear();
+            objectStorage.Add(EMPTY_HASH, new GObject(new TMaker()));
         }
 
         private void add(VInfo vi)
@@ -132,42 +155,6 @@ namespace MiniGL
 
     } 
 
-    public class GManager : VertexStorage<GObject>
-    {
-        public GManager(int initialStorageSize)
-            : base (initialStorageSize)
-        { }
-        public GManager()
-            : this (64)
-        { }
-
-        public void NewGObject(TMaker tmaker)
-        {
-            next();
-            setObject(new GObject(tmaker));
-        }
-        public void AddVertices(Vec4 v1, Vec4 v2, Vec4 v3)
-        {
-            addTriangle(v1, v2, v3);
-        }
-        public void AddVertices(Vec4 v1, Vec4 v2)
-        {
-            addLine(v1, v2);
-        }
-        public void RemoveGObject(int hash)
-        {
-            remove(hash);
-        }
-        public GObject GetGObject(int hash)
-        {
-            return getObjectByHash(hash);
-        }
-        public void DrawBuffer(ZBuffer zBuffer, Rasterizer raster, ViewTransformator viewT)
-        {
-            drawStorage(zBuffer, raster, viewT);
-        }
-    }
-
     public class GObject
     {
         protected TMaker tmaker;
@@ -177,5 +164,4 @@ namespace MiniGL
             this.tmaker = tmaker;
         }
     }
-
 }
