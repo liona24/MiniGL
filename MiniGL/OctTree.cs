@@ -126,7 +126,7 @@ public class OctTree<T> : IHasBoundaries3, IEnumerable<T>
     {
         return this.GetEnumerator();
     }
-    object IEnumerator.GetEnumerator()
+    IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator1();
     }

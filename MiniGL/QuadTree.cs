@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MiniGL
@@ -8,7 +9,7 @@ namespace MiniGL
         Rect Boundaries { get; }
     }
 
-    public class QuadTree<T> : IHasBoundaries where T : IHasBoundaries
+    public class QuadTree<T> : IHasBoundaries, IEnumerable<T> where T : IHasBoundaries
     {
         Rect bounds;
         bool hasChildren;
@@ -19,7 +20,7 @@ namespace MiniGL
         T[] items;
 
         public Rect Boundaries { get { return bounds; } }
-        public int ItemCount { get { return numItems + numItemsInChildren; } }
+        public int Count { get { return numItems + numItemsInChildren; } }
         public bool HasChildren { get { return hasChildren; } }
 
         public QuadTree(int numItemsBeforeSplit, Rect bounds)
@@ -97,43 +98,46 @@ namespace MiniGL
 
             return false;
         }
-
-        public List<T> GetItems()
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Collect().GetEnumerator();
+        }
+        public List<T> Collect()
         {
             var result = new List<T>();
-            GetItems(result);
+            Collect(result);
             return result;
         }
-        public void GetItems(List<T> result)
+        public void Collect(List<T> result)
         {
             if (numItemsInChildren > 0)
             {
-                tl.GetItems(result);
-                tr.GetItems(result);
-                bl.GetItems(result);
-                br.GetItems(result);
+                tl.Collect(result);
+                tr.Collect(result);
+                bl.Collect(result);
+                br.Collect(result);
             }
             for (int i = 0; i < numItems; i++)
                 result.Add(items[i]);
         }
 
-        public List<T> GetIntersecting(Rect bounds)
+        public List<T> CollectIntersection(Rect bounds)
         {
             var result = new List<T>();
-            GetIntersecting(bounds, result);
+            CollectIntersection(bounds, result);
             return result;
         }
-        public void GetIntersecting(Rect bounds, List<T> result)
+        public void CollectIntersection(Rect bounds, List<T> result)
         {
             if (!this.bounds.IntersectsWith(bounds))
                 return;
 
             if (numItemsInChildren > 0)
             {
-                tl.GetIntersecting(bounds, result);
-                tr.GetIntersecting(bounds, result);
-                bl.GetIntersecting(bounds, result);
-                br.GetIntersecting(bounds, result);
+                tl.CollectIntersection(bounds, result);
+                tr.CollectIntersection(bounds, result);
+                bl.CollectIntersection(bounds, result);
+                br.CollectIntersection(bounds, result);
             }
 
             for (int i = 0; i < numItems; i++)
@@ -180,14 +184,14 @@ namespace MiniGL
             var toAdd = new List<T>(numItemsInChildren);
             numItemsInChildren = 0;
             hasChildren = false;
-            if (tl.ItemCount > 0)
-                tl.GetItems(toAdd);
-            if (tr.ItemCount > 0)
-                tr.GetItems(toAdd);
-            if (bl.ItemCount > 0)
-                bl.GetItems(toAdd);
-            if (br.ItemCount > 0)
-                br.GetItems(toAdd);
+            if (tl.Count > 0)
+                tl.Collect(toAdd);
+            if (tr.Count > 0)
+                tr.Collect(toAdd);
+            if (bl.Count > 0)
+                bl.Collect(toAdd);
+            if (br.Count > 0)
+                br.Collect(toAdd);
             for (int i = 0; i < toAdd.Count; i++)
                 add(toAdd[i]);
 
@@ -195,6 +199,15 @@ namespace MiniGL
             tr = null;
             bl = null;
             br = null;
+        }
+
+        private IEnumerator GetEnumerator1()
+        {
+            return this.GetEnumerator();
+        }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator1();
         }
 
     }
