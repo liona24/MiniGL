@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace MiniGL
 {
-
-
     public static class Utility
     {
         public static bool PointInTri(Vec2 p, Vec2 t1,
