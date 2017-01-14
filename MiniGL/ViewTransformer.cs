@@ -7,26 +7,22 @@ namespace MiniGL
         Orthogonal,
         Perspective
     }
-    public class ViewTransformer
+    public class ViewTransformer : TMaker
     {
-        private Matrix4 mat;
-
         public Vec2 DepthRange { get; set; }
         public Rect ViewPort { get; set; }
         public ProjectionType ProjectionType { get; set; }
 
         public ViewTransformer(Matrix4 init, Vec2 depthRange, Rect viewPort)
+            : base(init)
         {
-            mat = init;
             DepthRange = depthRange;
             ViewPort = viewPort;
         }
         public ViewTransformer()
-        {
-            mat = Matrix4.GetIdentity();
-        }
+        { }
 
-        public void Calculate()
+        public void CalculateProjection()
         {
             if (ProjectionType == ProjectionType.Orthogonal)
             {
@@ -59,26 +55,34 @@ namespace MiniGL
             }
         }
 
-        public Vec3[] TransformToWindow(Vec4[] vertices)
+        public override object Clone()
         {
-            var unclipped = new Vec3[vertices.Length];
+            var nMat = (Matrix4)mat.Clone();
+            var ret = new ViewTransformer(nMat, DepthRange, ViewPort);
+            ret.ProjectionType = this.ProjectionType;
+            ret.CalculateProjection();
+            return ret;
+        }
+
+        public Vec3[] TransformToWindow(params Vec4[] vertices)
+        {
+            var unclipped = new List<Vec3>();
             for (int i = 0; i < vertices.Length; i++)
-                unclipped[i] = Vec3.FromHomo(mat * vertices[i]);
+                unclipped.Add(Vec3.FromHomo(mat * vertices[i]));
             return clip(unclipped);
         }
         
-        private Vec3[] clip(Vec3[] unclipped)
+        private Vec3[] clip(List<Vec3> unclipped)
         {
             var odd = new List<Vec3>();
-            var even = new List<Vec3>(unclipped);
+            var even = unclipped; 
 
-            if (unclipped.Length == 2)
+            if (unclipped.Count == 2)
                 return clip2(unclipped[0], unclipped[1]);
 
-            Vec3 last = even[unclipped.Length - 1];
-            for (int i = 0; i < even.Count; i++) // Left
+            Vec3 last = even[unclipped.Count - 1];
+            foreach (var e in even) //Left
             {
-                Vec3 e = even[i];
                 if (e.X >= -1)
                 {
                     if (last.X < -1)
@@ -93,9 +97,8 @@ namespace MiniGL
                 return new Vec3[0];
             last = odd[odd.Count - 1];
             even.Clear();
-            for (int i = 0; i < odd.Count; i++) // Top
+            foreach (var e in odd)// Top
             {
-                Vec3 e = odd[i];
                 if (e.Y >= -1)
                 {
                     if (last.Y < -1)
@@ -111,9 +114,8 @@ namespace MiniGL
             last = even[even.Count - 1];
             odd.Clear();
 
-            for (int i = 0; i < even.Count; i++) // Right
+            foreach (var e in even)// Right
             {
-                Vec3 e = even[i];
                 if (e.X <= 1)
                 {
                     if (last.X > 1)
@@ -128,9 +130,8 @@ namespace MiniGL
                 return new Vec3[0];
             last = odd[odd.Count - 1];
             even.Clear();
-            for (int i = 0; i < odd.Count; i++) // Bot
+            foreach (var e in odd) // Bot
             {
-                Vec3 e = odd[i];
                 if (e.Y <= 1)
                 {
                     if (last.Y > 1)
@@ -146,9 +147,8 @@ namespace MiniGL
                 return new Vec3[0];
             last = even[even.Count - 1];
             odd.Clear();
-            for (int i = 0; i < even.Count; i++) // Front
+            foreach (var e in even) // Front
             {
-                Vec3 e = even[i];
                 if (e.Z >= -1)
                 {
                     if (last.Z < -1)
@@ -163,9 +163,8 @@ namespace MiniGL
                 return new Vec3[0];
             last = odd[odd.Count - 1];
             even.Clear();
-            for (int i = 0; i < odd.Count; i++) // Back
+            foreach (var e in odd) // Back
             {
-                Vec3 e = odd[i];
                 if (e.Z <= 1)
                 {
                     if (last.Z > 1)

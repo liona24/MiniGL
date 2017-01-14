@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 
 namespace MiniGL
 {
     public class TMaker : ICloneable
     {
-        private Matrix4 mat; //transformation matrix
+        protected Matrix4 mat; //transformation matrix
 
         public TMaker()
         {
@@ -25,7 +24,7 @@ namespace MiniGL
         {
             mat = Matrix4.GetIdentity();
         }
-        public object Clone()
+        public virtual object Clone()
         {
             var nMat = (Matrix4)mat.Clone();
             return new TMaker(nMat);
