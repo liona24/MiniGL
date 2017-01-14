@@ -10,39 +10,52 @@ namespace MiniGL
 
         int width, height;
         int offsetX, offsetY;
-
-        readonly float[][] zIndicMap; //used to render polygons
+        ZBuffer zBuffer;
+        float[][] zIndicMap; //used to render polygons
 
         public int OffsetX { get { return offsetX; } set { offsetX = value; } }
         public int OffsetY { get { return offsetY; } set { offsetY = value; } }
-
-        public Rasterizer(int width, int height, int offsetX, int offsetY)
+        
+        public ZBuffer ZBuffer { get { return zBuffer; } }
+        
+        public Rasterizer(int offsetX, int offsetY, ZBuffer zBuffer)
         {
-            this.width = width;
-            this.height = height;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
+            SetZBuffer(zBuffer);
+        }
+        public Rasterizer(ZBuffer zBuffer)
+            : this(0, 0, zBuffer)
+        { }
 
-            zIndicMap = new float[width][];
-            for (int i = 0; i < width; i++)
+        public void SetZBuffer(ZBuffer z)
+        {
+            if (z.Width != width || z.Height != height)
             {
-                zIndicMap[i] = new float[height];
-                for (int j = 0; j < height; j++)
-                    zIndicMap[i][j] = EMPTY;
+                width = z.Width;
+                height = z.Height;
+                zIndicMap = new float[width][];
+                for (int i = 0; i < width; i++)
+                {
+                    zIndicMap[i] = new float[height];
+                    for (int j = 0; j < height; j++)
+                        zIndicMap[i][j] = EMPTY;
+                }
             }
+            zBuffer = z;
         }
 
-        public void Rasterize(int code, ZBuffer zBuffer, params Vec3[] poly)
+        public void Rasterize(int code, params Vec3[] poly)
         {
             if (poly.Length == 1)
                 zBuffer.TryInsert((int)poly[0].X, (int)poly[0].Y, (int)poly[0].Z, code);
             else if (poly.Length == 2)
-                rasterLine(poly[0], poly[1], code, zBuffer);
+                rasterLine(poly[0], poly[1], code);
             else if (poly.Length > 2)
-                rasterPoly(poly, code, zBuffer);
+                rasterPoly(poly, code);
         }
 
-        private void rasterPoly(Vec3[] poly, int code, ZBuffer zBuffer)
+        private void rasterPoly(Vec3[] poly, int code)
         {
             var bounds = (RectI)Utility.GetBounds(poly);
             bounds = new RectI(bounds.L - offsetX, bounds.T - offsetY, bounds.R - offsetX, bounds.B - offsetY);
@@ -89,7 +102,7 @@ namespace MiniGL
             }
         }
 
-        private void rasterLine(Vec3 from, Vec3 to, int code, ZBuffer zBuffer)
+        private void rasterLine(Vec3 from, Vec3 to, int code)
         {
             int x1 = (int)from.X - offsetX;
             int x2 = (int)to.X - offsetX;
