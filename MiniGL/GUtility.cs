@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace MiniGL
 {
@@ -424,6 +425,16 @@ namespace MiniGL
             }
         }
     }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct DoubleLongUnion
+    {
+        [FieldOffset(0)]
+        public double Double;
+        [FieldOffset(0)]
+        public long Long;
+    }
+
     [Serializable]
     public struct Vec2I
     {
@@ -784,7 +795,7 @@ namespace MiniGL
         public double Length2()
         {
             if (Math.Abs(_w) < 0.0001)
-                return 0;
+                return _x * _x + _y * _y + _z * _z;
             double n = 1 / _w / _w;
             return _x * _x * n + _y * _y * n + _z * _z * n;
         }
@@ -803,7 +814,7 @@ namespace MiniGL
         }
         public void Normalize()
         {
-            if (_w == 0)
+            if (_w == 0 || _w == 1)
                 return;
             _x /= _w;
             _y /= _w;
@@ -821,6 +832,15 @@ namespace MiniGL
         public override string ToString()
         {
             return "_x=" + _x.ToString("N3") + " _y=" + _y.ToString("N3") + " _z=" + _z.ToString("N3") + " _w=" + _w.ToString("N3");
+        }
+
+        public override int GetHashCode()
+        {
+            Normalize();
+            long lHash = new DoubleLongUnion { Double = _x }.Long ^ 
+                        new DoubleLongUnion { Double = _y }.Long ^
+                        new DoubleLongUnion { Double = _z }.Long;
+            return (int)(lHash ^ (lHash >> 32));
         }
 
         public static Vec4 operator +(Vec4 l, Vec4 r)
