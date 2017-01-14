@@ -7,29 +7,39 @@ namespace MiniGL
 {
     //TODO add xml serialization
     
+    internal struct Line 
+    {
+        public readonly int Index1, Index2;
+        public readonly int ObjHash;
+
+        public Line(int i1, int i2, int objHash)
+        {
+            Index1 = i1;
+            Index2 = i2;
+            ObjHash = objHash;
+        }
+    }
+    internal struct Triangle 
+    {
+        public readonly int Index1, Index2, Index3;
+        public readonly int ObjHash;
+
+        public Triangle(int i1, int i2, int i3, int objHash)
+        {
+            Index1 = i1;
+            Index2 = i2;
+            Index3 = i3;
+            ObjHash = objHash;
+        }
+    }
+
     ///<summary>
     /// Handles vertex and GObject storage
     ///</summary>
     public class GManager 
     {
         private const int EMPTY_HASH = -1;
-
-        private struct VInfo
-        {
-            public readonly Vec4[] Vertices;
-            public readonly int ObjHash;
-
-            public VInfo(Vec4 v1, Vec4 v2, Vec4 v3, int objHash)
-            {
-                Vertices = new Vec4[3] { v1, v2, v3 };
-                ObjHash = objHash;
-            }
-            public VInfo(Vec4 v1, Vec4 v2, int objHash)
-            {
-                Vertices = new Vec4[2] { v1, v2 };
-                ObjHash = objHash;
-            }
-            
+           /* 
             //TODO export this function somewhere where it is usefull
             public VInfo[] Split()
             {
@@ -54,110 +64,157 @@ namespace MiniGL
                     res[3] = new VInfo(mid01, mid02, mid12, ObjHash);
                 }
                 return res;
-            }
-        }
+            }*/
 
-        private VInfo[] vertexStorage;
-        private int fillLevelVertexStorage;
-        
+        private readonly Dictionary<int, Vec4> vertexStorage;
+        private readonly List<Triangle> triangles;
+        private readonly List<Line> lines;
         private int activeHash;
+
         private readonly Dictionary<int, GObject> objectStorage;
 
         public GManager(int initialStorageSize)
         {
-            vertexStorage = new VInfo[initialStorageSize];
-            fillLevelVertexStorage = 0;
+            vertexStorage = new Dictionary<int, Vec4>();
             activeHash = EMPTY_HASH;
             objectStorage = new Dictionary<int, GObject>();
             objectStorage.Add(activeHash, new GObject(new TMaker()));
+            triangles = new List<Triangle>();
+            lines = new List<Line>();
         }
         ///<summary>
-        ///Returns the GObject corresponding to the given hash
+        ///Returns the GObject corresponding to the given hash, null if it does not exist
         ///</summary>
         public GObject GetObjectByHash(int hash)
         {
-            return objectStorage[hash];
+            GObject ret;
+            if (objectStorage.TryGetValue(hash, out ret))
+                return ret;
+
+            return null;
         }
         ///<summary>
         ///Adds a new GObject to the internal storage. All vertices will be linked to that GObject until another one becomes active
         ///</summary>
         public void AddGObject(GObject obj)
         {
-            activeHash++;
+            activeHash = obj.GetHashCode();
             objectStorage.Add(activeHash, obj);
+        }
+        ///<summary>
+        ///Activates the given GObject. All triangles and lines will be linked to that GObject until another on becomes active
+        ///</summary>
+        public void ActiveGObject(GObject obj)
+        {
+            int hash = obj.GetHashCode();
+            if (!objectStorage.ContainsKey(hash))
+                throw new ArgumentException("obj", "GObject does not exist in the storage!");
+            activeHash = hash;
+        }
+        ///<summary>
+        ///Activates the given GObject. All triangles and lines will be linked to that GObject until another on becomes active
+        ///</summary>
+        public void ActiveGObject(int hash)
+        {
+            if (!objectStorage.ContainsKey(hash))
+                throw new ArgumentException("hash", "Hashcode does not correspond with a GObject in the storage");
+
+            activeHash = hash;
         }
         ///<summary>
         ///Adds a triangle to the vertex buffer and links it to the currently active GObject
         ///</summary>
         public void AddVertices(Vec4 v1, Vec4 v2, Vec4 v3)
         {
-            add(new VInfo(v1, v2, v3, activeHash));
+            int hash1 = v1.GetHashCode();
+            int hash2 = v2.GetHashCode();
+            int hash3 = v3.GetHashCode();
+            if (!vertexStorage.ContainsKey(hash1))
+                vertexStorage.Add(hash1, v1);
+            if (!vertexStorage.ContainsKey(hash2))
+                vertexStorage.Add(hash2, v2);
+            if (!vertexStorage.ContainsKey(hash3))
+                vertexStorage.Add(hash3, v3);
+            triangles.Add(new Triangle(hash1, hash2, hash3, activeHash));
         }
         ///<summary>
         ///Adds a line to the vertex buffer and links it to the currently active GObject
         ///</summary>
         public void AddVertices(Vec4 v1, Vec4 v2)
         {
-            add(new VInfo(v1, v2, activeHash));
+            int hash1 = v1.GetHashCode();
+            int hash2 = v2.GetHashCode();
+            if (!vertexStorage.ContainsKey(hash1))
+                vertexStorage.Add(hash1, v1);
+            if (!vertexStorage.ContainsKey(hash2))
+                vertexStorage.Add(hash2, v2);
+            lines.Add(new Line(hash1, hash2, activeHash));
         }
         ///<summary>
-        ///Removes the GObject corresponding to the given hash from the internal storage and all linked vertices
+        ///Removes the GObject corresponding to the given hash from the internal storage and all linked lines and triangles
         ///</summary>
         public void RemoveObjectByHash(int hash)
         {
             objectStorage.Remove(hash);
-            for (int i = 0; i < fillLevelVertexStorage; i++)
-            {
-                if (vertexStorage[i].ObjHash == hash)
-                    vertexStorage[i--] = vertexStorage[fillLevelVertexStorage--];
-            }
+            triangles.RemoveAll(s => s.ObjHash == hash);
+            lines.RemoveAll(s => s.ObjHash == hash);
         }
         ///<summary>
-        ///Draws every vertex in the storage to the given zBuffer using the given rasterizer and ViewTransformator
+        ///Draws every vertex in the storage using the given rasterizer and ViewTransformator
         ///</summary>
-        public void DrawStorage(ZBuffer zBuffer, Rasterizer raster, ViewTransformator viewT)
+        public void DrawStorage(Rasterizer raster, ViewTransformator viewT)
         {
             int cacheHash = EMPTY_HASH;
-            GObject cacheObject = null;
-            for (int i = 0; i < fillLevelVertexStorage; i++)
+            GObject cacheObject = objectStorage[EMPTY_HASH];
+            foreach (var tri in triangles) 
             {
-                var stored = vertexStorage[i];
-                if (stored.ObjHash != cacheHash)
+                if (tri.ObjHash != cacheHash)
                 {
-                    cacheHash = stored.ObjHash;
+                    cacheHash = tri.ObjHash;
                     cacheObject = objectStorage[cacheHash];
                 }
-                var transformed = new Vec4[stored.Vertices.Length];
-                cacheObject.TMaker.Transform(stored.Vertices, transformed);
-                raster.Rasterize(cacheHash, zBuffer, viewT.TransformToWindow(transformed));
+                var v1 = vertexStorage[tri.Index1];
+                var v2 = vertexStorage[tri.Index2];
+                var v3 = vertexStorage[tri.Index3];
+                var tf = viewT.TransformToWindow(cacheObject.TMaker.Transform(v1),
+                                                cacheObject.TMaker.Transform(v2),
+                                                cacheObject.TMaker.Transform(v3));
+                raster.Rasterize(cacheHash, tf);
+            }
+            cacheHash = EMPTY_HASH;
+            cacheObject = objectStorage[EMPTY_HASH];
+            foreach (var line in lines) 
+            {
+                if (line.ObjHash != cacheHash)
+                {
+                    cacheHash = tri.ObjHash;
+                    cacheObject = objectStorage[cacheHash];
+                }
+                var v1 = vertexStorage[line.Index1];
+                var v2 = vertexStorage[line.Index2];
+                var tf = viewT.TransformToWindow(cacheObject.TMaker.Transform(v1),
+                                                cacheObject.TMaker.Transform(v2));
+                raster.Rasterize(cacheHash, tf);
             }
         }
         ///<summary>
-        ///Clears the vertex storage and all removes all GObjects
+        ///Clears the vertex storage and removes all GObjects
         ///</summary>
         public void Clear()
         {
-            activeHash = 0;
-            fillLevelVertexStorage = 0;
+            activeHash = EMPTY_HASH;
             objectStorage.Clear();
             objectStorage.Add(EMPTY_HASH, new GObject(new TMaker()));
+            vertexStorage.Clear();
+            triangles.Clear();
+            lines.Clear();
         }
-
-        private void add(VInfo vi)
-        {
-            if (fillLevelVertexStorage >= vertexStorage.Length)
-            {
-                int nSize = Math.Min(int.MaxValue, vertexStorage.Length * 2);
-                Array.Resize(ref vertexStorage, nSize);
-            }
-            vertexStorage[fillLevelVertexStorage++] = vi;
-        }
-
     } 
 
     public class GObject
     {
         protected TMaker tmaker;
+        public TMaker TMaker { get { return tmaker; } }
 
         public GObject(TMaker tmaker)
         {
