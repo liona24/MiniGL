@@ -160,9 +160,9 @@ namespace MiniGL
             lines.RemoveAll(s => s.ObjHash == hash);
         }
         ///<summary>
-        ///Draws every vertex in the storage using the given rasterizer and ViewTransformator
+        ///Draws every vertex in the storage using the given painter and ViewTransformator
         ///</summary>
-        public void DrawStorage(Rasterizer raster, ViewTransformator viewT)
+        public void DrawStorage(Painter painter, ViewTransformator viewT)
         {
             int cacheHash = EMPTY_HASH;
             GObject cacheObject = objectStorage[EMPTY_HASH];
@@ -179,7 +179,7 @@ namespace MiniGL
                 var tf = viewT.TransformToWindow(cacheObject.TMaker.Transform(v1),
                                                 cacheObject.TMaker.Transform(v2),
                                                 cacheObject.TMaker.Transform(v3));
-                raster.Rasterize(cacheHash, tf);
+                painter.Paint(cacheHash, tf);
             }
             cacheHash = EMPTY_HASH;
             cacheObject = objectStorage[EMPTY_HASH];
@@ -194,7 +194,7 @@ namespace MiniGL
                 var v2 = vertexStorage[line.Index2];
                 var tf = viewT.TransformToWindow(cacheObject.TMaker.Transform(v1),
                                                 cacheObject.TMaker.Transform(v2));
-                raster.Rasterize(cacheHash, tf);
+                painter.Paint(cacheHash, tf);
             }
         }
         ///<summary>
