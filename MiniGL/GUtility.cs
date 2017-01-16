@@ -191,7 +191,7 @@ namespace MiniGL
             return tris;
         }
 
-        public static Rect GetBounds(I2Dimensional[] coll)
+        public static Rect GetBounds(Vec2[] coll)
         {
             double l = double.MaxValue;
             double r = double.MinValue;
@@ -199,14 +199,12 @@ namespace MiniGL
             double b = double.MinValue;
             for (int i = 0; i < coll.Length; i++)
             {
-                if (coll[i].GetX() < l)
-                    l = coll[i].GetX();
-                if (coll[i].GetX() > r)
-                    r = coll[i].GetX();
-                if (coll[i].GetY() < t)
-                    t = coll[i].GetY();
-                if (coll[i].GetY() > b)
-                    b = coll[i].GetY();
+                if (coll[i].X < l)
+                    l = coll[i].X;
+                if (coll[i].X > r)
+                    t = coll[i].Y;
+                if (coll[i].Y > b)
+                    b = coll[i].Y;
             }
             return new Rect(l, t, r, b);
         }
