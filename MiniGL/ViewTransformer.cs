@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GraphicsUtility;
 
 namespace MiniGL
 {
@@ -86,11 +87,11 @@ namespace MiniGL
                 if (e.X >= -1)
                 {
                     if (last.X < -1)
-                        odd.Add(Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), last, e));
+                        odd.Add(GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), last, e));
                     odd.Add(e);
                 }
                 else if (last.X > -1)
-                    odd.Add(Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), last, e));
+                    odd.Add(GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), last, e));
                 last = e;
             }
             if (odd.Count == 0)
@@ -102,11 +103,11 @@ namespace MiniGL
                 if (e.Y >= -1)
                 {
                     if (last.Y < -1)
-                        even.Add(Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), last, e));
+                        even.Add(GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), last, e));
                     even.Add(e);
                 }
                 else if (last.Y > -1)
-                    even.Add(Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), last, e));
+                    even.Add(GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), last, e));
                 last = e;
             }
             if (even.Count == 0)
@@ -119,11 +120,11 @@ namespace MiniGL
                 if (e.X <= 1)
                 {
                     if (last.X > 1)
-                        odd.Add(Utility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), last, e));
+                        odd.Add(GUtility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), last, e));
                     odd.Add(e);
                 }
                 else if (last.X < 1)
-                    odd.Add(Utility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), last, e));
+                    odd.Add(GUtility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), last, e));
                 last = e;
             }
             if (odd.Count == 0)
@@ -135,11 +136,11 @@ namespace MiniGL
                 if (e.Y <= 1)
                 {
                     if (last.Y > 1)
-                        even.Add(Utility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), last, e));
+                        even.Add(GUtility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), last, e));
                     even.Add(e);
                 }
                 else if (last.Y < 1)
-                    even.Add(Utility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), last, e));
+                    even.Add(GUtility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), last, e));
                 last = e;
             }
 
@@ -152,11 +153,11 @@ namespace MiniGL
                 if (e.Z >= -1)
                 {
                     if (last.Z < -1)
-                        odd.Add(Utility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), last, e));
+                        odd.Add(GUtility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), last, e));
                     odd.Add(e);
                 }
                 else if (last.Z > -1)
-                    odd.Add(Utility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), last, e));
+                    odd.Add(GUtility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), last, e));
                 last = e;
             }
             if (odd.Count == 0)
@@ -168,11 +169,11 @@ namespace MiniGL
                 if (e.Z <= 1)
                 {
                     if (last.Z > 1)
-                        even.Add(toWindow(Utility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), last, e)));
+                        even.Add(toWindow(GUtility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), last, e)));
                     even.Add(toWindow(e));
                 }
                 else if (last.Z < 1)
-                    even.Add(toWindow(Utility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), last, e)));
+                    even.Add(toWindow(GUtility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), last, e)));
                 last = e;
             }
             return even.ToArray();
@@ -183,60 +184,60 @@ namespace MiniGL
             if (p1.X >= -1)
             {
                 if (p2.X < -1)
-                    p2 = Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), p2, p1);
+                    p2 = GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), p2, p1);
             }
             else if (p2.X >= -1)
-                p1 = Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), p2, p1);
+                p1 = GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(-1, 1, 0), new Vec3(-1, 0, 1), p2, p1);
             else
                 return new Vec3[0];
 
             if (p1.Y >= -1)
             {
                 if (p2.Y < -1)
-                    p2 = Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), p2, p1);
+                    p2 = GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), p2, p1);
             }
             else if (p2.Y >= -1)
-                p1 = Utility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), p2, p1);
+                p1 = GUtility.IntersectionPlaneLine(new Vec3(-1, -1, 0), new Vec3(1, -1, 0), new Vec3(0, -1, 1), p2, p1);
             else
                 return new Vec3[0];
 
             if (p1.X <= 1)
             {
                 if (p2.X > 1)
-                    p2 = Utility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), p2, p1);
+                    p2 = GUtility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), p2, p1);
             }
             else if (p2.X <= 1)
-                p1 = Utility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), p2, p1);
+                p1 = GUtility.IntersectionPlaneLine(new Vec3(1, -1, 0), new Vec3(1, 1, 0), new Vec3(1, 0, 1), p2, p1);
             else
                 return new Vec3[0];
 
             if (p1.Y <= 1)
             {
                 if (p2.Y > 1)
-                    p2 = Utility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), p2, p1);
+                    p2 = GUtility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), p2, p1);
             }
             else if (p2.Y <= 1)
-                p1 = Utility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), p2, p1);
+                p1 = GUtility.IntersectionPlaneLine(new Vec3(-1, 1, 0), new Vec3(1, 1, 0), new Vec3(0, 1, 1), p2, p1);
             else
                 return new Vec3[0];
 
             if (p1.Z >= -1)
             {
                 if (p2.Z < -1)
-                    p2 = Utility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), p2, p1);
+                    p2 = GUtility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), p2, p1);
             }
             else if (p2.Z >= -1)
-                p1 = Utility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), p2, p1);
+                p1 = GUtility.IntersectionPlaneLine(new Vec3(0, 0, -1), new Vec3(1, 0, -1), new Vec3(0, 1, -1), p2, p1);
             else
                 return new Vec3[0];
 
             if (p1.Z <= 1)
             {
                 if (p2.Z > 1)
-                    p2 = Utility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), p2, p1);
+                    p2 = GUtility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), p2, p1);
             }
             else if (p2.Z <= 1)
-                p1 = Utility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), p2, p1);
+                p1 = GUtility.IntersectionPlaneLine(new Vec3(0, 0, 1), new Vec3(1, 0, 1), new Vec3(0, 1, 1), p2, p1);
             else
                 return new Vec3[0];
 

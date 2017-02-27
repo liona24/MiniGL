@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
+using GraphicsUtility;
 
 namespace MiniGL
 {
     public struct HashableLeaf : IHasBoundaries
     {
         public readonly int HashCode;
-        public readonly Rect Boundaries;
+        public Rect Boundaries { get; private set; }
         public readonly Vec3[] Points;
 
         public HashableLeaf(int hashCode, Vec3[] points)
@@ -63,9 +66,9 @@ namespace MiniGL
                 rasterPoly(poly, code);
         }
 
-        private abstract void rasterPoly(Vec3[] poly, int code);
-        private abstract void rasterLine(Vec3 p1, Vec3 p2, int code);
-        private abstract void rasterPoint(Vec3 p1, int code);
+        protected abstract void rasterPoly(Vec3[] poly, int code);
+        protected abstract void rasterLine(Vec3 p1, Vec3 p2, int code);
+        protected abstract void rasterPoint(Vec3 p1, int code);
         
         public static Painter GetPainter(ZBuffer target)
         {
@@ -81,7 +84,7 @@ namespace MiniGL
         }
         public static Painter GetPainter(QuadTree<HashableLeaf> target, int offsetX, int offsetY)
         {
-            return new TreePainter(target, offsetX, offsetY);
+            return new TreePainter(offsetX, offsetY, target);
         }
 
         private class ArrayPainter : Painter
@@ -104,9 +107,9 @@ namespace MiniGL
                 }
             }
 
-            private override void rasterPoly(Vec3[] poly, int code)
+            protected override void rasterPoly(Vec3[] poly, int code)
             {
-                var bounds = (RectI)Utility.GetBounds(poly);
+                var bounds = (RectI)GUtility.GetBounds(poly.Select((i) => new Vec2(i.X, i.Y)));
                 bounds = new RectI(bounds.L - offsetX, bounds.T - offsetY, bounds.R - offsetX, bounds.B - offsetY);
 
                 for (int i = 0; i < poly.Length - 1; i++)
@@ -151,7 +154,12 @@ namespace MiniGL
                 }
             }
 
-            private override void rasterLine(Vec3 from, Vec3 to, int code)
+            protected override void rasterPoint(Vec3 p1, int code)
+            {
+                zBuffer.TryInsert((int)p1.X, (int)p1.Y, (float)p1.Z, code);
+            }
+
+            protected override void rasterLine(Vec3 from, Vec3 to, int code)
             {
                 int x1 = (int)from.X - offsetX;
                 int x2 = (int)to.X - offsetX;
@@ -264,6 +272,19 @@ namespace MiniGL
                 : base(offsetX, offsetY, (int)target.Boundaries.Width, (int)target.Boundaries.Height)
             {
                 tree = target;
+            }
+
+            protected override void rasterLine(Vec3 p1, Vec3 p2, int code)
+            {
+                throw new NotImplementedException();
+            }
+            protected override void rasterPoint(Vec3 p1, int code)
+            {
+                throw new NotImplementedException();
+            }
+            protected override void rasterPoly(Vec3[] poly, int code)
+            {
+                throw new NotImplementedException();
             }
         }
     }

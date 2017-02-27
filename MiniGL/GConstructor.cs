@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using GraphicsUtility;
+
 namespace MiniGL
 {
     ///<summary>
@@ -105,7 +107,9 @@ namespace MiniGL
             double step = Math.PI * 2 / numSegments; //calculating position over quarter of circle
             double angle = step;
             int numIter = numSegments / 4;
-            double x, y, nx, ny;
+            double x, y;
+            double nx = 0;
+            double ny = 0;
             for (int i = 1; i < numIter; i++)
             {
                 x = Math.Sin(angle);
@@ -244,7 +248,7 @@ namespace MiniGL
                     if (!indexCache.TryGetValue(hash, out index))
                     {
                         var mid = vecs[i1] + vecs[i2];
-                        mid.MakeUnit();
+                        mid = Vec4.Normalize(mid);
                         index = vecs.Count;
                         indexCache.Add(hash, index);
                         vecs.Add(mid);
@@ -255,7 +259,7 @@ namespace MiniGL
                     if (!indexCache.TryGetValue(hash, out index))
                     {
                         var mid = vecs[i1] + vecs[i2];
-                        mid.MakeUnit();
+                        mid = Vec4.Normalize(mid);
                         index = vecs.Count;
                         indexCache.Add(hash, index);
                         vecs.Add(mid);
@@ -266,7 +270,7 @@ namespace MiniGL
                     if (!indexCache.TryGetValue(hash, out index))
                     {
                         var mid = vecs[i1] + vecs[i2];
-                        mid.MakeUnit();
+                        mid = Vec4.Normalize(mid);
                         index = vecs.Count;
                         indexCache.Add(hash, index);
                         vecs.Add(mid);
@@ -306,14 +310,14 @@ namespace MiniGL
             }
         }
 
-        private static long hashTwoIndices(int i1, int i2)
+        private static Func<int, int, long> hashTwoIndices = (i1, i2) =>
         {
-            long hash; 
+            long hash;
             if (i1 < i2)
                 hash = (long)i1 << 32 + i2;
             else
                 hash = (long)i2 << 32 + i1;
             return hash;
-        }
+        };
     }
 }

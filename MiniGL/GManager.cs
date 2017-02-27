@@ -3,6 +3,8 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Collections.Generic;
 
+using GraphicsUtility;
+
 namespace MiniGL
 {
     //TODO add xml serialization
@@ -162,7 +164,7 @@ namespace MiniGL
         ///<summary>
         ///Draws every vertex in the storage using the given painter and ViewTransformator
         ///</summary>
-        public void DrawStorage(Painter painter, ViewTransformator viewT)
+        public void DrawStorage(Painter painter, ViewTransformer viewT)
         {
             int cacheHash = EMPTY_HASH;
             GObject cacheObject = objectStorage[EMPTY_HASH];
@@ -187,7 +189,7 @@ namespace MiniGL
             {
                 if (line.ObjHash != cacheHash)
                 {
-                    cacheHash = tri.ObjHash;
+                    cacheHash = line.ObjHash;
                     cacheObject = objectStorage[cacheHash];
                 }
                 var v1 = vertexStorage[line.Index1];
