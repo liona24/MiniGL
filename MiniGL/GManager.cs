@@ -80,7 +80,7 @@ namespace MiniGL
             vertexStorage = new Dictionary<int, Vec4>();
             activeHash = EMPTY_HASH;
             objectStorage = new Dictionary<int, GObject>();
-            objectStorage.Add(activeHash, new GObject(new TMaker()));
+            objectStorage.Add(activeHash, new GObject(new Transform(Transform.GetIdentity())));
             triangles = new List<Triangle>();
             lines = new List<Line>();
         }
@@ -164,7 +164,7 @@ namespace MiniGL
         ///<summary>
         ///Draws every vertex in the storage using the given painter and ViewTransformator
         ///</summary>
-        public void DrawStorage(Painter painter, ViewTransformer viewT)
+        public void DrawStorage(Painter painter, ViewTransform viewT)
         {
             int cacheHash = EMPTY_HASH;
             GObject cacheObject = objectStorage[EMPTY_HASH];
@@ -178,9 +178,9 @@ namespace MiniGL
                 var v1 = vertexStorage[tri.Index1];
                 var v2 = vertexStorage[tri.Index2];
                 var v3 = vertexStorage[tri.Index3];
-                var tf = viewT.TransformToWindow(cacheObject.TMaker.Transform(v1),
-                                                cacheObject.TMaker.Transform(v2),
-                                                cacheObject.TMaker.Transform(v3));
+                var tf = viewT.ToWindow(cacheObject.Transform * v1,
+                                                cacheObject.Transform * v2,
+                                                cacheObject.Transform * v3);
                 painter.Paint(cacheHash, tf);
             }
             cacheHash = EMPTY_HASH;
@@ -194,8 +194,8 @@ namespace MiniGL
                 }
                 var v1 = vertexStorage[line.Index1];
                 var v2 = vertexStorage[line.Index2];
-                var tf = viewT.TransformToWindow(cacheObject.TMaker.Transform(v1),
-                                                cacheObject.TMaker.Transform(v2));
+                var tf = viewT.ToWindow(cacheObject.Transform * v1,
+                                                cacheObject.Transform * v2);
                 painter.Paint(cacheHash, tf);
             }
         }
@@ -206,7 +206,7 @@ namespace MiniGL
         {
             activeHash = EMPTY_HASH;
             objectStorage.Clear();
-            objectStorage.Add(EMPTY_HASH, new GObject(new TMaker()));
+            objectStorage.Add(EMPTY_HASH, new GObject(new Transform(Transform.GetIdentity())));
             vertexStorage.Clear();
             triangles.Clear();
             lines.Clear();
@@ -215,12 +215,12 @@ namespace MiniGL
 
     public class GObject
     {
-        protected TMaker tmaker;
-        public TMaker TMaker { get { return tmaker; } }
+        protected Transform trans;
+        public Transform Transform { get { return trans; } }
 
-        public GObject(TMaker tmaker)
+        public GObject(Transform trans)
         {
-            this.tmaker = tmaker;
+            this.trans = trans;
         }
     }
 }

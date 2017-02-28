@@ -8,21 +8,25 @@ namespace MiniGL
         Orthogonal,
         Perspective
     }
-    public class ViewTransformer : TMaker
+    public class ViewTransform : Transform 
     {
         public Vec2 DepthRange { get; set; }
         public Rect ViewPort { get; set; }
         public ProjectionType ProjectionType { get; set; }
 
-        public ViewTransformer(Matrix4 init, Vec2 depthRange, Rect viewPort)
+        public ViewTransform(Matrix4 init, Vec2 depthRange, Rect viewPort)
             : base(init)
         {
             DepthRange = depthRange;
             ViewPort = viewPort;
         }
-        public ViewTransformer()
+        public ViewTransform()
+            : base(GetIdentity())
         { }
 
+        /// <summary>
+        /// This method sets the base matrix to a projection matrix of type ProjectionType
+        /// </summary>
         public void CalculateProjection()
         {
             if (ProjectionType == ProjectionType.Orthogonal)
@@ -34,10 +38,10 @@ namespace MiniGL
                 double n = DepthRange.X;
                 double f = DepthRange.Y;
 
-                mat = new Matrix4(new double[] { 2 / (r - l), 0, 0, (-l - r) / (r - l),
+                v = new double[] { 2 / (r - l), 0, 0, (-l - r) / (r - l),
                                                    0, 2 / (b - t), 0, (-t - b) / (b - t),
                                                    0, 0, -2 / (f - n), (-n - f) / (f - n),
-                                                   0, 0, 0, 1});
+                                                   0, 0, 0, 1};
             }
             else if (ProjectionType == ProjectionType.Perspective)
             {
@@ -47,29 +51,29 @@ namespace MiniGL
                 double l = ViewPort.L;
                 double t = ViewPort.T;
                 double b = ViewPort.B;
-                mat = new Matrix4(new double[] {
+                v = new double[] {
                        2 * n / (r - l),                0, (r + l) / (r - l), 0,
                                      0,  2 * n / (b - t), (t + b) / (b - t), 0,
                                      0,                0, (f + n) / (n - f), 2 * f * n / (n - f),
-                                     0,                0,                -1, 0 });
+                                     0,                0,                -1, 0 };
 
             }
         }
 
-        public override object Clone()
+        public new object Clone()
         {
-            var nMat = (Matrix4)mat.Clone();
-            var ret = new ViewTransformer(nMat, DepthRange, ViewPort);
-            ret.ProjectionType = this.ProjectionType;
+            var nMat = (Matrix4)base.Clone();
+            var ret = new ViewTransform(nMat, DepthRange, ViewPort);
+            ret.ProjectionType = ProjectionType;
             ret.CalculateProjection();
             return ret;
         }
 
-        public Vec3[] TransformToWindow(params Vec4[] vertices)
+        public Vec3[] ToWindow(params Vec4[] vertices)
         {
             var unclipped = new List<Vec3>();
             for (int i = 0; i < vertices.Length; i++)
-                unclipped.Add(Vec3.FromHomo(mat * vertices[i]));
+                unclipped.Add(Vec3.FromHomo(this * vertices[i]));
             return clip(unclipped);
         }
         

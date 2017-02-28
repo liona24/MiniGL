@@ -47,7 +47,6 @@
     <Compile Include="Painter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuadTree.cs" />
-    <Compile Include="TMaker.cs" />
     <Compile Include="ViewTransformer.cs" />
     <Compile Include="ZBuffer.cs" />
   </ItemGroup>
