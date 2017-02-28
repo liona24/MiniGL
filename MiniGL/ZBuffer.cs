@@ -16,6 +16,8 @@ namespace MiniGL
 
         public ZBuffer(int width, int height, int background)
         {
+            this.width = width;
+            this.height = height;
             zs = new float[width][];
             hashCodes = new int[width][];
             for (int i = 0; i < width; i++)
